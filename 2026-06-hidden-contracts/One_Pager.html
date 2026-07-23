@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>One-pager · AI Automation vs. Legacy APIs</title>
+<style>
+  @page { size: A4; margin: 12mm 14mm; }
+  @font-face{font-family:"DINish";src:url("fonts/DINish-Regular.woff2") format("woff2");font-weight:400}
+  @font-face{font-family:"DINish";src:url("fonts/DINish-SemiBold.woff2") format("woff2");font-weight:600}
+  @font-face{font-family:"DINish";src:url("fonts/DINish-Bold.woff2") format("woff2");font-weight:700}
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0a0a;--txt:#f4f4f4;--muted:#9b9b9b;--accent:#e11d2a;--red:#ff4d4d;--mono:"SF Mono",Menlo,Consolas,monospace}
+  body{font-family:"DINish",Arial,sans-serif;background:#fff;color:#1a1a1a;font-size:9pt;line-height:1.45}
+
+  .head{background:var(--bg);color:var(--txt);padding:11px 14px 10px;display:flex;justify-content:space-between;align-items:flex-end}
+  .head .kicker{font-family:var(--mono);font-size:7pt;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px}
+  .head h1{font-size:17pt;line-height:1.05;font-weight:700}
+  .head .sub{font-size:9pt;color:var(--muted);margin-top:3px}
+  .head .who{text-align:right;font-size:8.5pt}
+  .head .who b{display:block;font-size:10pt;color:#fff}
+
+  .body{padding:10px 14px 8px}
+
+  .sec{margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid #e8e8e8}
+  .sec:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .sec h2{font-size:9.5pt;color:var(--accent);font-weight:700;margin-bottom:4px}
+  .sec p{font-size:8.8pt;color:#333;margin-bottom:4px}
+  .sec p:last-child{margin-bottom:0}
+
+  .lead{background:#fdf0f0;border-left:3px solid var(--accent);padding:7px 10px;margin-bottom:10px;font-size:9pt;line-height:1.45}
+  .lead b{color:#8b1010}
+
+  .contracts{font-size:8.8pt;margin:4px 0}
+  .contracts b{color:#000}
+
+  ol.contracts-list{margin:4px 0 0 18px;padding:0;font-size:8.5pt;color:#333}
+  ol.contracts-list li{margin:3px 0}
+  ol.contracts-list b{color:#000}
+  ol.contracts-list span{color:#666}
+
+  .code{font-family:var(--mono);background:#100c0c;color:#ededed;border:1px solid #333;border-radius:4px;padding:6px 8px;font-size:7.4pt;line-height:1.5;margin:5px 0;white-space:pre}
+  .code .r{color:var(--red)} .code .c{color:#7a7a7a}
+
+  .land{font-size:8.8pt;font-weight:700;color:#8b1010;margin-top:3px}
+
+  ul.doors{margin:4px 0 0 16px;padding:0;font-size:8.5pt}
+  ul.doors li{margin:3px 0;color:#333}
+  ul.doors li.bad{color:#8b1010}
+
+  .fix{background:#161616;color:#d8d8d8;border-radius:4px;padding:7px 9px;margin-top:4px;font-size:8.5pt}
+  .fix b{color:#fff}
+
+  .close{margin-top:10px;padding-top:8px;border-top:2px solid #1a1a1a;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+  .close .quote{font-size:9.5pt;font-weight:700;color:#1a1a1a;line-height:1.35;max-width:75%}
+  .close .quote span{color:var(--accent)}
+  .links{font-family:var(--mono);font-size:7pt;color:#888;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div>
+    <div class="kicker">// field report &middot; one-pager</div>
+    <h1>AI Automation vs. Legacy APIs</h1>
+    <div class="sub">The Hidden Contracts Behind "The API Broke"</div>
+  </div>
+  <div class="who">
+    <b>Sean Murray</b>
+    Automation Engineer &middot; ~10 min
+  </div>
+</div>
+
+<div class="body">
+
+  <div class="lead">
+    I wired AI automation into an ERP I was building. Every call returned <b>200 OK</b>; the records were <b>quietly wrong</b>.
+    The message was "the API broke." It didn't. A <b>hidden contract</b> did, a rule nobody wrote down.
+    <b>A 200 OK is the most dangerous thing the AI can hear</b> (Goodhart's Law: it chases the 200, not the correct result).
+  </div>
+
+  <div class="sec">
+    <h2>1 &middot; Every system has two contracts</h2>
+    <p class="contracts"><b>Explicit</b> = endpoints, schemas, status codes (what's in the docs). &nbsp;
+    <b>Hidden</b> = what the experienced colleague just knows (never written down).</p>
+  </div>
+
+  <div class="sec">
+    <h2>2 &middot; Five hidden contracts (all can return 200 OK while being wrong)</h2>
+    <ol class="contracts-list">
+      <li><b>Meaning</b> &mdash; a field doesn't mean what it looks like <span>(price with/without tax)</span></li>
+      <li><b>Hidden workflow</b> &mdash; one action runs a whole chain <span>(create also reserves stock, sends email)</span></li>
+      <li><b>Background</b> &mdash; who you are changes the answer <span>(company, language, timezone)</span></li>
+      <li><b>Sequence</b> &mdash; steps must happen in order <span>(skip one, totals break)</span></li>
+      <li><b>Retry</b> &mdash; twice shouldn't mean twice <span>(timeout retry = duplicate order)</span></li>
+    </ol>
+  </div>
+
+  <div class="sec">
+    <h2>3 &middot; The create trap (proof)</h2>
+    <p>In the UI, the form fills pricing, taxes and terms. Through the API, the automation sends three fields and skips all of that.</p>
+    <div class="code">erp.create("sales_order", {customer: 42, lines: [...]})
+<span class="c"># -> </span>200 OK<span class="c">. </span><span class="r">form logic never ran.</span></div>
+    <p class="land">Only the UI was honoring the contract.</p>
+  </div>
+
+  <div class="sec">
+    <h2>4 &middot; Two doors into one system</h2>
+    <p>Tools like OpenClaw can enter either way. Someone will aim one at your ERP this quarter.</p>
+    <ul class="doors">
+      <li><b>Through the UI</b> &mdash; slow, but follows the form logic.</li>
+      <li class="bad"><b>Through the API</b> &mdash; fast, skips the form, 200 OK, silently wrong.</li>
+    </ul>
+    <p class="land">Only one door warns you. The AI guesses from field names and treats 200 as proof.</p>
+  </div>
+
+  <div class="sec">
+    <h2>5 &middot; The fix: one safe verb</h2>
+    <p>Don't expose the raw API. Expose one intent-level action that runs the form logic, shows a dry-run diff, and dedupes retries:</p>
+    <div class="fix">
+      <div class="code" style="background:transparent;border:none;padding:0;margin:0;color:#ededed"><span class="c">create_confirmed_order(customer, lines, idem_key)</span></div>
+      OpenClaw, MCP tools, n8n flows: all call the same safe button.
+    </div>
+    <p style="margin-top:5px">Better models won't save you. Turn tribal knowledge into explicit, enforced contracts.</p>
+  </div>
+
+  <div class="close">
+    <div class="quote">"The API broke" is a review comment about <span>your system</span>, not the model's.</div>
+    <div class="links">slides · write-up</div>
+  </div>
+
+</div>
+</body>
+</html>

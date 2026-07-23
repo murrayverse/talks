@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AI Automation vs. Legacy APIs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* Soft industrial mint / deep teal palette */
+    --bg:#071412; --bg2:#0e1f1c; --line:#1e3a34; --txt:#f2f7f5; --muted:#8aa39b;
+    --accent:#28cfaf; --accent2:#7bdcb5; --accent-deep:#0F5B4C;
+    --warn:#f0b429; --red:#ff6b6b;
+    --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+    --sans:"Nunito",system-ui,-apple-system,sans-serif;
+  }
+  html,body{background:#000}
+  body{font-family:var(--sans);color:var(--txt);font-weight:400}
+  .slide{
+    position:relative;width:1280px;height:720px;overflow:hidden;
+    background:
+      radial-gradient(1100px 600px at 82% -10%, rgba(40,207,175,.16) 0%, transparent 55%),
+      radial-gradient(900px 500px at -10% 110%, rgba(15,91,76,.35) 0%, var(--bg) 60%);
+    padding:64px 72px;page-break-after:always;display:flex;flex-direction:column;
+  }
+  .slide:last-child{page-break-after:auto}
+  .kicker{font-family:var(--mono);font-size:15px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;font-weight:500}
+  h1{font-size:62px;line-height:1.05;font-weight:800;letter-spacing:-1px}
+  h2{font-size:38px;line-height:1.12;font-weight:700;letter-spacing:-.4px;margin-bottom:8px}
+  h3{font-size:22px;font-weight:700;color:var(--accent)}
+  p{font-size:23px;line-height:1.5;color:#d5e6e1}
+  .big{font-size:28px;line-height:1.45}
+  .muted{color:var(--muted)}
+  ul{margin:14px 0 0 4px;list-style:none}
+  li{font-size:23px;line-height:1.45;margin:13px 0;padding-left:34px;position:relative;color:#d5e6e1}
+  li:before{content:"\25B8";position:absolute;left:0;color:var(--accent);font-size:20px;top:2px}
+  .foot{position:absolute;left:72px;right:72px;bottom:30px;display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:13px;color:#6f8a82;border-top:1px solid var(--line);padding-top:12px}
+  .num{font-family:var(--mono);color:#6f8a82}
+  .mono{font-family:var(--mono)}
+  .accent{color:var(--accent)}
+  .accent2{color:var(--accent2)}
+  a{color:var(--accent);text-decoration:none}
+  .warnc{color:var(--warn)}
+  .redc{color:var(--red)}
+  .center{justify-content:center}
+  .quote{font-size:40px;line-height:1.3;font-weight:700;max-width:980px}
+  .code{background:#061512;border:1px solid var(--line);border-radius:14px;padding:20px 22px;font-family:var(--mono);
+    font-size:18px;line-height:1.6;color:#ededed;white-space:pre;margin-top:8px}
+  .code .c{color:#6f8a82}.code .k{color:var(--accent2)}.code .s{color:#ffffff}.code .r{color:var(--red)}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:16px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top;color:#d5e6e1}
+  th{background:#0F5B4C;color:#e8fff8;font-size:13px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  td b{color:#fff}
+  td.plain{color:#e8f5f1;font-size:15px}
+  td.ex{color:var(--muted);font-size:14px;line-height:1.35}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px}
+  .panel{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .panel h3{margin-bottom:8px;font-size:20px}
+  .panel p{font-size:18px;line-height:1.4}
+  .placeholder{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    border:1.5px dashed var(--line);border-radius:16px;margin-top:18px;
+    background:rgba(40,207,175,.04);color:var(--muted);font-size:22px;text-align:center;padding:28px;
+  }
+  .placeholder b{color:var(--accent2);display:block;margin-bottom:8px;font-size:18px;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase}
+
+  /* Shared animated example panels (slides 04 / 06) */
+  .anim-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:8px;gap:14px}
+  .anim-stage{
+    display:grid;grid-template-columns:1.1fr auto 1fr;gap:18px;align-items:center;
+    background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px 26px;
+  }
+  .key-card{
+    border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#061512;
+    font-family:var(--mono);position:relative;overflow:hidden;
+  }
+  .key-card .label{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .key-card .val{font-size:22px;font-weight:600;color:#fff}
+  .key-card .sub{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.35;font-family:var(--sans)}
+  .key-card.stable{border-color:var(--accent)}
+  .key-card.stable .val{color:var(--accent)}
+  .key-card.numeric .val{position:relative;min-height:28px}
+  .key-card.bad{border-color:var(--red)}
+  .key-card.bad .val{color:var(--red)}
+  .numeric .val .id-a,.numeric .val .id-b{
+    font-size:22px;font-weight:600;display:inline-block;
+  }
+  .numeric .val .id-a{color:#fff;animation:fade-a 5s ease-in-out infinite}
+  .numeric .val .id-b{color:var(--warn);margin-left:6px;animation:fade-b 5s ease-in-out infinite}
+  .arrow-col{text-align:center;font-family:var(--mono);font-size:14px;color:var(--muted)}
+  .arrow-col .agent{
+    display:inline-block;padding:8px 12px;border-radius:8px;border:1px solid var(--line);
+    background:#0a1a17;color:var(--warn);animation:pick-wrong 5s ease-in-out infinite;
+  }
+  .arrow-col .agent.good{animation:pick-right 5s ease-in-out infinite}
+  .result-row{display:flex;gap:14px;align-items:stretch}
+  .result-pill{
+    flex:1;border-radius:12px;border:1px solid var(--line);padding:14px 18px;
+    font-size:18px;background:#061512;
+  }
+  .result-pill .t{font-family:var(--mono);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .result-pill.ok{border-color:var(--accent)}
+  .result-pill.bad{border-color:var(--red);animation:pulse-bad 5s ease-in-out infinite}
+  .result-pill.ok-pulse{border-color:var(--accent);animation:pulse-ok 5s ease-in-out infinite}
+  .swap-hl{animation:swap-glow 5s ease-in-out infinite}
+  @keyframes fade-a{
+    0%,42%{opacity:1}
+    50%,100%{opacity:.25}
+  }
+  @keyframes fade-b{
+    0%,42%{opacity:.25}
+    50%,100%{opacity:1}
+  }
+  @keyframes pick-wrong{
+    0%,42%{border-color:var(--line);color:var(--warn)}
+    50%,100%{border-color:var(--red);color:var(--red)}
+  }
+  @keyframes pick-right{
+    0%,42%{border-color:var(--line);color:var(--muted)}
+    50%,100%{border-color:var(--accent);color:var(--accent)}
+  }
+  @keyframes pulse-bad{
+    0%,42%{opacity:.5}
+    50%,92%{opacity:1}
+    100%{opacity:.5}
+  }
+  @keyframes pulse-ok{
+    0%,42%{opacity:.55}
+    50%,92%{opacity:1}
+    100%{opacity:.55}
+  }
+  @keyframes swap-glow{
+    0%,40%{border-color:var(--line)}
+    50%,90%{border-color:var(--red);box-shadow:0 0 0 1px rgba(255,107,107,.25)}
+    100%{border-color:var(--line)}
+  }
+
+  /* Slide 08: static numbered points (no animation) */
+  .steps-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;margin-top:6px}
+  .step{
+    display:grid;grid-template-columns:56px 1fr;gap:16px;align-items:start;
+    border:1px solid var(--line);border-radius:14px;padding:14px 18px;background:#061512;
+  }
+  .step .n{
+    font-family:var(--mono);font-size:20px;font-weight:700;color:#061512;
+    width:40px;height:40px;border-radius:10px;border:1px solid var(--accent);
+    background:var(--accent);display:grid;place-items:center;margin-top:2px;
+  }
+  .step .body h3{font-size:18px;margin-bottom:4px;color:#e8f5f1;font-weight:700}
+  .step .body p{font-size:17px;line-height:1.4;color:var(--muted);margin:0}
+  .step .body .mono{color:var(--accent2)}
+
+  /* Summary slide */
+  .summary-list{margin-top:14px;list-style:none}
+  .summary-list li{
+    font-size:22px;line-height:1.4;margin:12px 0;padding-left:34px;position:relative;color:#d5e6e1;
+  }
+  .summary-list li:before{content:"\25B8";position:absolute;left:0;color:var(--accent);font-size:18px;top:2px}
+
+  /* Title slide */
+  .title-wrap{display:flex;align-items:center;gap:40px;flex:1}
+  .title-left{flex:1}
+  .title-left h1{font-size:56px}
+  .subtitle{font-size:26px;color:var(--muted);margin-top:18px;line-height:1.4}
+  .byline{margin-top:34px;font-size:22px}
+  .byline b{font-size:24px}
+  .portrait{width:300px;flex:none;text-align:center}
+  .title-wrap .portrait{width:170px;flex:none;text-align:center}
+  .pcircle{width:280px;height:280px;border-radius:50%;margin:0 auto;
+    background:linear-gradient(150deg,#0F5B4C,#071412);border:2px solid var(--accent);
+    display:grid;place-items:center;box-shadow:0 0 0 8px rgba(40,207,175,.14)}
+  .title-wrap .pcircle{width:150px;height:150px;box-shadow:0 0 0 5px rgba(40,207,175,.14)}
+  img.pcircle{object-fit:cover;object-position:center 30%;display:block}
+  .pcap{margin-top:16px;font-family:var(--mono);font-size:13px;color:#6f8a82}
+  .title-wrap .pcap{margin-top:10px;font-size:11px}
+  .talkmeta{position:absolute;left:72px;bottom:42px;font-family:var(--mono);font-size:14px;color:#6f8a82}
+</style>
+</head>
+<body>
+
+<!-- 1. TITLE -->
+<section class="slide center">
+  <div class="title-wrap">
+    <div class="portrait">
+      <img class="pcircle" src="portrait.jpg" alt="Sean Murray" width="150" height="150">
+    </div>
+    <div class="title-left">
+      <div class="kicker">// a field report</div>
+      <h1>AI Automation <span class="muted">vs.</span> Legacy APIs</h1>
+      <div class="subtitle">The Hidden Contracts Behind <span class="accent">"The API Broke"</span></div>
+      <div class="byline">
+        <b>Sean Murray</b><br>
+        <span class="muted">Automation Engineer</span>
+      </div>
+    </div>
+  </div>
+      <div class="talkmeta">~10–12 min &middot; 2026</div>
+</section>
+
+<!-- 2. EXPLANATIONS FOR FAILURE -->
+<section class="slide">
+  <div class="kicker">// 02 &middot; explanations for failure</div>
+  <h2>When automation "breaks" an API, the usual explanations are wrong.</h2>
+  <div class="grid2" style="margin-top:18px;gap:16px">
+    <div class="panel">
+      <h3 class="muted" style="color:var(--muted)">What people say</h3>
+      <ul style="margin-top:6px">
+        <li style="font-size:20px;margin:10px 0">The model hallucinated</li>
+        <li style="font-size:20px;margin:10px 0">The integration is flaky</li>
+        <li style="font-size:20px;margin:10px 0">We need a better prompt</li>
+        <li style="font-size:20px;margin:10px 0">"The API broke"</li>
+      </ul>
+    </div>
+    <div class="panel" style="border-color:var(--accent)">
+      <h3>What's actually going on</h3>
+      <ul style="margin-top:6px">
+        <li style="font-size:20px;margin:10px 0">Every call returned <span class="mono accent">200 OK</span></li>
+        <li style="font-size:20px;margin:10px 0">Records looked fine and were <span class="warnc">quietly wrong</span></li>
+        <li style="font-size:20px;margin:10px 0">A <span class="accent">hidden contract</span> never got written down</li>
+        <li style="font-size:20px;margin:10px 0"><span class="mono">Goodhart:</span> it chased the status code, not the correct result</li>
+      </ul>
+    </div>
+  </div>
+  <p class="big" style="margin-top:22px;font-size:26px"><span class="warnc">A 200 OK is the most dangerous thing the AI can hear.</span></p>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">02</span></div>
+</section>
+
+<!-- 3. EXPLICIT V HIDDEN CONTRACTS (kept) -->
+<section class="slide">
+  <div class="kicker">// 03 &middot; the hidden contracts</div>
+  <h2>Every system has two contracts</h2>
+  <div class="grid2" style="margin-top:12px;gap:14px">
+    <div class="panel"><h3>Explicit</h3><p>Endpoints, schemas, status codes. What's in the docs.</p></div>
+    <div class="panel" style="border-color:var(--accent)"><h3 class="accent">Hidden</h3><p>What the experienced colleague just <i>knows</i>. Five ways it bites you:</p></div>
+  </div>
+  <table style="margin-top:12px">
+    <tr><th>Hidden contract</th><th>In plain English</th><th>What goes wrong</th></tr>
+    <tr><td><b>Meaning</b></td><td class="plain">A field doesn't mean what it looks like</td><td class="ex">Price with or without tax; wrong unit of measure</td></tr>
+    <tr><td><b>Hidden workflow</b></td><td class="plain">One action runs a whole chain behind it</td><td class="ex">Create also reserves stock, sends email, assigns a number</td></tr>
+    <tr><td><b>Background</b></td><td class="plain">Who you are changes the answer</td><td class="ex">Company, language, timezone, defaults all shift the result</td></tr>
+    <tr><td><b>Sequence</b></td><td class="plain">Steps must happen in order</td><td class="ex">Skip a step and the totals come out wrong</td></tr>
+    <tr><td><b>Retry</b></td><td class="plain">Doing it twice should not do it twice</td><td class="ex">A timeout retry creates a duplicate record</td></tr>
+  </table>
+  <p class="big" style="margin-top:10px;font-size:22px"><span class="warnc">All five can return 200 OK while being wrong.</span></p>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">03</span></div>
+</section>
+
+<!-- 4. EXAMPLE 1 -->
+<section class="slide">
+  <div class="kicker">// 04 &middot; example 1</div>
+  <h2>Stable keys are not numeric IDs</h2>
+  <div class="anim-wrap">
+    <div class="anim-stage">
+      <div class="key-card stable">
+        <div class="label">Stable key (survives renumber)</div>
+        <div class="val">product.steel_bracket</div>
+      </div>
+      <div class="arrow-col">
+        <div style="margin-bottom:10px;font-size:13px">agent picks</div>
+        <div class="agent">→ numeric id</div>
+      </div>
+      <div class="key-card numeric">
+        <div class="label">Numeric PK (changes after migrate)</div>
+        <div class="val"><span class="id-a">1842</span><span class="id-b">991</span></div>
+      </div>
+    </div>
+    <div class="result-row">
+      <div class="result-pill ok">
+        <div class="t">If you used the stable key</div>
+        Same product. Still correct after renumber.
+      </div>
+      <div class="result-pill bad">
+        <div class="t">If you hardcoded 1842</div>
+        <span class="mono">200 OK</span> — linked to the wrong row, or nothing.
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">04</span></div>
+</section>
+
+<!-- 5. EXAMPLE 2 -->
+<section class="slide">
+  <div class="kicker">// 05 &middot; example 2</div>
+  <h2>Deploy before migrating</h2>
+  <div class="grid2" style="margin-top:18px">
+    <div class="panel">
+      <h3>The trap</h3>
+      <p>Ship the new code path first. Migration of the data (or the identifiers it depends on) comes later, or not at all.</p>
+    </div>
+    <div class="panel" style="border-color:var(--warn)">
+      <h3 class="warnc">What the AI sees</h3>
+      <p><span class="mono">200 OK</span> on writes against a world the old records never entered. Explicit schema looks fine. Sequence contract is broken.</p>
+    </div>
+  </div>
+  <p class="big" style="margin-top:28px;font-size:24px">Order of operations is a contract. Deploy and migrate are not interchangeable.</p>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">05</span></div>
+</section>
+
+<!-- 6. EXAMPLE 3 -->
+<section class="slide">
+  <div class="kicker">// 06 &middot; example 3</div>
+  <h2>XML IDs vs numeric IDs</h2>
+  <div class="anim-wrap">
+    <div class="anim-stage">
+      <div class="key-card stable">
+        <div class="label">xml_id / external id</div>
+        <div class="val">product.steel_bracket</div>
+        <div class="sub">What humans mean by "the product"</div>
+      </div>
+      <div class="arrow-col">
+        <div style="margin-bottom:10px;font-size:13px">docs look like</div>
+        <div class="agent">either works?</div>
+      </div>
+      <div class="key-card numeric swap-hl">
+        <div class="label">numeric primary key</div>
+        <div class="val">1842</div>
+        <div class="sub">What this endpoint actually expects</div>
+      </div>
+    </div>
+    <div class="result-row">
+      <div class="result-pill ok">
+        <div class="t">Right identifier</div>
+        Contract matches. Record links correctly.
+      </div>
+      <div class="result-pill bad">
+        <div class="t">Swapped identifier</div>
+        <span class="mono">200 OK</span> — wrong link, or a silent no-op. Meaning contract, not a network failure.
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">06</span></div>
+</section>
+
+<!-- 7. BEST PRACTICES (was old "the fix") -->
+<section class="slide">
+  <div class="kicker">// 07 &middot; best practices</div>
+  <h2>Best practices for accounting for hidden contracts</h2>
+  <p style="margin-top:8px;font-size:21px">The model guesses the contract from field names and treats <span class="mono">200</span> as proof.
+  <span class="accent">It doesn't break APIs. It exposes what humans were quietly doing.</span></p>
+  <div class="code" style="margin-top:14px;font-size:17px;line-height:1.65"><span class="s">create_confirmed_thing</span>(payload, <span class="k">idem_key</span>)
+  run the form logic       <span class="c"># defaults, validations, side effects</span>
+  dry-run, show a diff      <span class="c"># don't trust 200</span>
+  one idempotency key       <span class="c"># retries are safe</span></div>
+  <p class="big" style="margin-top:16px;font-size:26px">Better models won't save you. Turn tribal knowledge into
+  <span class="accent">explicit, enforced contracts.</span></p>
+  <p class="quote" style="margin-top:14px;font-size:30px">"The API broke" is a review comment about <span class="accent">your</span> system, not the model's.</p>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">07</span></div>
+</section>
+
+<!-- 8. THE FIX -->
+<section class="slide">
+  <div class="kicker">// 08 &middot; the fix</div>
+  <h2>The fix &middot; one safe verb</h2>
+  <div class="steps-wrap">
+    <div class="step">
+      <div class="n">1</div>
+      <div class="body">
+        <h3>Raw create is the trap</h3>
+        <p>Agents reach for <span class="mono">POST /things</span>. It returns <span class="mono">200 OK</span> while skipping form logic — and a retry can create a duplicate.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div class="body">
+        <h3>Don't expose the raw door</h3>
+        <p>If the only tool is unconstrained create, the model will use it. Hide the unsafe verb from the agent.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <div class="body">
+        <h3>Hand one safe verb</h3>
+        <p><span class="mono">create_confirmed_thing</span> — a single action that still means "do the whole job correctly."</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <div class="body">
+        <h3>Enforce the hidden contract</h3>
+        <p>Run form logic inside the verb. Require an idempotency key. Same key twice → still one thing.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">08</span></div>
+</section>
+
+<!-- 9. SUMMARY -->
+<section class="slide">
+  <div class="kicker">// 09 &middot; takeaways</div>
+  <h2>What to remember</h2>
+  <ul class="summary-list">
+    <li>A <span class="mono accent">200 OK</span> is not proof the business result is correct.</li>
+    <li>Every system has two contracts: what's documented, and what operators quietly know.</li>
+    <li>Hidden contracts show up as meaning, sequence, identity, retries — not as HTTP errors.</li>
+    <li>Don't give the AI the raw API. Give it <span class="accent">one safe verb</span> that enforces the contract.</li>
+  </ul>
+  <p class="quote" style="margin-top:22px;font-size:28px">"The API broke" is a review comment about <span class="accent">your</span> system, not the model's.</p>
+  <div class="foot"><span>AI Automation vs. Legacy APIs</span><span class="num">09</span></div>
+</section>
+
+</body>
+</html>
